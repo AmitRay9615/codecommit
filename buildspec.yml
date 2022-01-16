@@ -9,6 +9,9 @@ phases:
     - python --version
     - pip3 install boto3
     - apt-get install awscli -y
+    - aws configure set aws_access_key_id 'AKIA4QIWBQQQLN2TC5WC'
+    - aws configure set aws_secret_access_key '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'
+    - aws configure set default.region 'ap-south-1'
    
   build:
    commands:
