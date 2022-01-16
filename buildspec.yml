@@ -1,8 +1,10 @@
+version: 0.2
 phases:
   install:
-    runtime-versions:
-      python: 3.9.9
+   commands:
+    - apt-get update -y
+    - apt-get install python3.9
  pre_build:
   commands:
-    - pip3 install boto3
     - python --version
+   
