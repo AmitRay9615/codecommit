@@ -8,18 +8,22 @@ from pprint import pprint
 
 ec2 = boto3.client(
     'ec2',
+    aws_access_key_id= 'AKIA4QIWBQQQLN2TC5WC',
+    aws_secret_access_key= '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',
     region_name='ap-south-1'
 )
 inspec = boto3.client(
     'inspector',
+    aws_access_key_id='AKIA4QIWBQQQLN2TC5WC',
+    aws_secret_access_key='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',
     region_name='ap-south-1'
 )
 
 s3 = boto3.resource(
     's3',
-    region_name='ap-south-1'
+    aws_access_key_id='AKIA4QIWBQQQLN2TC5WC',
+    aws_secret_access_key='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',
 )
-
 #ami_name = ['amzn2-ami-ecs-gpu-hvm-2.0.*','unsilo-ecs-optimized-*','unsilo-focalbase-*','unsilo-es7-*','amazon-eks-node-1.21-*']
 
 
