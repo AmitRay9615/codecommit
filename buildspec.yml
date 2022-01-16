@@ -1,0 +1,8 @@
+phases:
+  install:
+    runtime-versions:
+      python: 3.9.9
+ pre_build:
+  commands:
+    - pip3 install boto3
+    - python --version
