@@ -9,3 +9,9 @@ phases:
     - python --version
     - pip3 install boto3
    
+  build:
+   commands:
+      - python3 region.py
+      - aws s3 ls
+   finally:
+      - echo 'code execution completed'
