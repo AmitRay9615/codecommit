@@ -52,9 +52,9 @@ for img in images:
         
         pprint(ec2.describe_images(Filters=[{'Name':'image-id', 'Values': [img['ImageId']]}]))
        
-        out=ec2.run_instances(ImageId=img['ImageId'],InstanceType='t2.micro',MaxCount=1,MinCount=1,NetworkInterfaces=[{'SubnetId': 'subnet-08af92491d5b60c8c','DeviceIndex': 0,'Groups': ['sg-08073df0a483ccf66']}])
+        #out=ec2.run_instances(ImageId=img['ImageId'],InstanceType='t2.micro',MaxCount=1,MinCount=1,NetworkInterfaces=[{'SubnetId': 'subnet-08af92491d5b60c8c','DeviceIndex': 0,'Groups': ['sg-08073df0a483ccf66']}])
         
-        # out=ec2.run_instances(ImageId=img['ImageId'],InstanceType='t2.micro',MaxCount=1,MinCount=1)
+        out=ec2.run_instances(ImageId=img['ImageId'],InstanceType='t2.micro',MaxCount=1,MinCount=1)
 
     
 
