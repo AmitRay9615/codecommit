@@ -4,7 +4,7 @@ phases:
    commands:
     - apt-get update -y
     - apt-get install python3.9
- pre_build:
-  commands:
+  pre_build:
+   commands:
     - python --version
    
