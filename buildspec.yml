@@ -7,4 +7,5 @@ phases:
   pre_build:
    commands:
     - python --version
+    - pip3 install boto3
    
