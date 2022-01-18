@@ -15,7 +15,9 @@ phases:
    
   build:
    commands:
-      - python3 inspec.py
+      - output=$(date)
+      - echo $output
+      - python3 inspec.py $output
       - aws s3 ls
    finally:
       - echo 'code execution completed'
