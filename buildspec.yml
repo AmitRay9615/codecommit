@@ -17,7 +17,7 @@ phases:
    commands:
       - output=ami-id4542655
       - echo $output
-      - python3 inspec.py $output
+      - python3 aws_inspector/inspec.py $output
       - aws s3 ls
    finally:
       - echo 'code execution completed'
