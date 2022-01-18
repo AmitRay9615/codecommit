@@ -15,7 +15,7 @@ phases:
    
   build:
    commands:
-      - output=$(date)
+      - output=ami-id4542655
       - echo $output
       - python3 inspec.py $output
       - aws s3 ls
