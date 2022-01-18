@@ -1,6 +1,7 @@
 import boto3
 import time
 import re
+import sys
 import json
 import requests
 from pprint import pprint
@@ -114,6 +115,9 @@ for img in images:
 
         inspec.delete_assessment_target(assessmentTargetArn=assessment_target_arn)
         ec2.terminate_instances(InstanceIds=[instanceId])
+        print("############################################# output ##########################################")
+        print(sys.argv[1])
+        
 
 
 
