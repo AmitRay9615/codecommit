@@ -12,12 +12,14 @@ phases:
     - aws configure set aws_access_key_id 'AKIA4QIWBQQQLN2TC5WC'
     - aws configure set aws_secret_access_key '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'
     - aws configure set default.region 'ap-south-1'
+  
    
   build:
    commands:
       - output=ami-id4542655
       - echo $output
-      - python3 aws_inspector/inspec.py $output
+      - DATE=`date '+%Y-%m-%d'`
+      - python3 aws_inspector/inspec.py $output $DATE
       - aws s3 ls
    finally:
       - echo 'code execution completed'
