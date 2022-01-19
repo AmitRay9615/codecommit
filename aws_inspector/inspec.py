@@ -111,7 +111,7 @@ for img in images:
         with open(f"{img['Name']}.pdf", 'wb') as f:
            f.write(res.content)
 
-        s3.Bucket('dggg').upload_file(f"{img['Name']}.pdf", sys.argv[2]+"/"+f'{img['Name']}.pdf')
+        s3.Bucket('dggg').upload_file(f"{img['Name']}.pdf", sys.argv[2]+"/"+ f"{img['Name']}.pdf")
 
         inspec.delete_assessment_target(assessmentTargetArn=assessment_target_arn)
         ec2.terminate_instances(InstanceIds=[instanceId])
