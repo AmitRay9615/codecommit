@@ -1,0 +1,113 @@
+import boto3
+ssm_client = boto3.client('ssm', region_name='us-east-1')
+
+
+
+# ssm_resp = ssm_client.send_command(
+#     InstanceIds=['i-0c35ad4a74e4ffd10'],
+#     DocumentName='AWS-ConfigureAWSPackage',
+#     Parameters={'action': ['Install'],'installationType':['Uninstall and reinstall'], 'name': ['AmazonCloudWatchAgent'], 'version':['latest']},
+# )
+
+# response = ssm_client.put_parameter(
+#     Name='AmazonCloudWatch-linux',
+#     Description='Create config file for metrics',
+#     Value="""
+#             {
+#                 "agent": {
+#                         "metrics_collection_interval": 60,
+#                         "run_as_user": "cwagent"
+#                 },
+#                 "metrics": {
+#                         "append_dimensions": {
+#                                 "AutoScalingGroupName": "${aws:AutoScalingGroupName}",
+#                                 "ImageId": "${aws:ImageId}",
+#                                 "InstanceId": "${aws:InstanceId}",
+#                                 "InstanceType": "${aws:InstanceType}"
+#                         },
+#                         "metrics_collected": {
+#                                 "cpu": {
+#                                         "measurement": [
+#                                                 "cpu_usage_idle",
+#                                                 "cpu_usage_iowait",
+#                                                 "cpu_usage_user",
+#                                                 "cpu_usage_system"
+#                                         ],
+#                                         "metrics_collection_interval": 60,
+#                                         "totalcpu": false
+#                                 },
+#                                 "disk": {
+#                                         "measurement": [
+#                                                 "used_percent",
+#                                                 "inodes_free"
+#                                         ],
+#                                         "metrics_collection_interval": 60,
+#                                         "resources": [
+#                                                 "*"
+#                                         ]
+#                                 },
+#                                 "diskio": {
+#                                         "measurement": [
+#                                                 "io_time"
+#                                         ],
+#                                         "metrics_collection_interval": 60,
+#                                         "resources": [
+#                                                 "*"
+#                                         ]
+#                                 },
+#                                 "mem": {
+#                                         "measurement": [
+#                                                 "mem_used_percent"
+#                                         ],
+#                                         "metrics_collection_interval": 60
+#                                 },
+#                                 "swap": {
+#                                         "measurement": [
+#                                                 "swap_used_percent"
+#                                         ],
+#                                         "metrics_collection_interval": 60
+#                                 }
+#                         }
+#                 }
+#             }""",
+#     Type='String',
+#     Overwrite=True,
+#     Tier='Standard',
+#     DataType='text'
+#     )
+
+# ssm_resp = ssm_client.send_command(
+#     InstanceIds=['i-0c35ad4a74e4ffd10'],
+#     DocumentName='AmazonCloudWatch-ManageAgent',
+#     Parameters={'action':['configure'],'mode': ['ec2'],'optionalRestart':['yes'], 'optionalConfigurationSource': ['ssm'], 'optionalConfigurationLocation':['AmazonCloudWatch-linux']},
+# )
+
+
+cloudwatch = boto3.client('cloudwatch')
+cloudwatch.put_metric_alarm(
+        AlarmName = "Disk-Utilization-85-Pct" + "-(" + "i-0c35ad4a74e4ffd10" + ")-" ,
+        ComparisonOperator = 'GreaterThanThreshold',
+        EvaluationPeriods = 1,
+        MetricName = 'disk_used_percent',
+        Namespace = 'CWAgent',
+        Period = 60,
+        Statistic = 'Average',
+        Threshold = 80.0,
+        ActionsEnabled=True,
+        AlarmActions=[
+        'arn:aws:sns:us-east-1:859576566816:cloudwatch'
+        ],
+        AlarmDescription = 'Alarm when there is 80+"%"+disk used',
+        Dimensions = [
+    
+            {'Name': 'InstanceId', 'Value': 'i-0c35ad4a74e4ffd10', },
+            {'Name': 'ImageId', 'Value': 'ami-04505e74c0741db8d'},
+            {'Name': 'InstanceType', 'Value': 't2.micro'},
+            {'Name': 'device', 'Value': 'xvda1'},
+            {'Name': 'fstype', 'Value': 'ext4'},
+            {'Name': 'path', 'Value': '/'},
+              
+        ],
+        TreatMissingData = 'missing'
+    )
+#"mode=ec2,optionalRestart=yes,optionalConfigurationSource=ssm,action=configure,optionalConfigurationLocation=AmazonLinuxCloudWatchAgentConfig"  --comment "Configure CloudWatch Agent on EC2 Linux machine"
