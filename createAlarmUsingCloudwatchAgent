@@ -154,3 +154,172 @@ for agent in instance_list[1:2]:
 #                 {'Name': 'path', 'Value': '/'},
                 
 #             ],
+
+
+
+
+
+################################################################################################################################################################################################################
+
+
+
+
+import boto3
+from pprint import pprint
+ssm_client = boto3.client('ssm', region_name='ap-northeast-1')
+
+
+
+instance_list=[]
+ec2 = boto3.client('ec2', region_name='ap-northeast-1')
+response = ec2.describe_instances(Filters=[{'Name': 'tag:Env', 'Values': ['prod']},{'Name': 'instance-state-name', 'Values': ['running']}])['Reservations']
+for instances in response:
+    for instance in instances['Instances']:
+        d={}
+        d['imageId']=instance['ImageId']
+        d['instanceId']=instance['InstanceId']
+        d['instanceType']=instance['InstanceType']
+        for tag in instance['Tags']:
+            if tag['Key'] == 'Name':
+               d['instance_name']=tag['Value']
+    instance_list.append(d)
+
+
+
+for agent in instance_list[2:3]:
+    print(agent['instanceId'],agent['imageId'],agent['instanceType'],agent['instance_name'])
+
+    ssm_resp = ssm_client.send_command(
+        InstanceIds=[agent['instanceId']],
+        DocumentName='AWS-ConfigureAWSPackage',
+        Parameters={'action': ['Install'],'installationType':['Uninstall and reinstall'], 'name': ['AmazonCloudWatchAgent'], 'version':['latest']},
+    )
+
+    response = ssm_client.put_parameter(
+        Name='AmazonCloudWatch-linux',
+        Description='Create config file for metrics',
+        Value="""
+                {
+                    "agent": {
+                            "metrics_collection_interval": 60,
+                            "run_as_user": "cwagent"
+                    },
+                    "metrics": {
+                            "append_dimensions": {
+                                    "AutoScalingGroupName": "${aws:AutoScalingGroupName}",
+                                    "ImageId": "${aws:ImageId}",
+                                    "InstanceId": "${aws:InstanceId}",
+                                    "InstanceType": "${aws:InstanceType}"
+                            },
+                            "metrics_collected": {
+                                    "cpu": {
+                                            "measurement": [
+                                                    "cpu_usage_idle",
+                                                    "cpu_usage_iowait",
+                                                    "cpu_usage_user",
+                                                    "cpu_usage_system"
+                                            ],
+                                            "metrics_collection_interval": 60,
+                                            "totalcpu": false
+                                    },
+                                    "disk": {
+                                            "measurement": [
+                                                    "used_percent",
+                                                    "inodes_free"
+                                            ],
+                                            "metrics_collection_interval": 60,
+                                            "resources": [
+                                                    "*"
+                                            ]
+                                    },
+                                    "diskio": {
+                                            "measurement": [
+                                                    "io_time"
+                                            ],
+                                            "metrics_collection_interval": 60,
+                                            "resources": [
+                                                    "*"
+                                            ]
+                                    },
+                                    "mem": {
+                                            "measurement": [
+                                                    "mem_used_percent"
+                                            ],
+                                            "metrics_collection_interval": 60
+                                    },
+                                    "swap": {
+                                            "measurement": [
+                                                    "swap_used_percent"
+                                            ],
+                                            "metrics_collection_interval": 60
+                                    }
+                            }
+                    }
+                }""",
+        Type='String',
+        Overwrite=True,
+        Tier='Standard',
+        DataType='text'
+        )
+
+    ssm_resp = ssm_client.send_command(
+        InstanceIds=[agent['instanceId']],
+        DocumentName='AmazonCloudWatch-ManageAgent',
+        Parameters={'action':['configure'],'mode': ['ec2'],'optionalRestart':['yes'], 'optionalConfigurationSource': ['ssm'], 'optionalConfigurationLocation':['AmazonCloudWatch-linux']},
+    )
+
+
+    cloudwatch = boto3.client('cloudwatch',region_name='ap-northeast-1')
+    cloudwatch.put_metric_alarm(
+            AlarmName = "CRITICAL-" + "(" +agent['instance_name']+ ")-Disk-Utilization" ,
+            ComparisonOperator = 'GreaterThanThreshold',
+            EvaluationPeriods = 2,
+            MetricName = 'disk_used_percent',
+            Namespace = 'CWAgent',
+            Period = 300,
+            Statistic = 'Average',
+            Threshold = 80.0,
+            ActionsEnabled=True,
+            AlarmActions=[
+            'arn:aws:sns:ap-northeast-1:738893429783:OpsNotifications',
+            'arn:aws:sns:ap-northeast-1:738893429783:OpsNotifications-Hipchat'
+            ],
+            AlarmDescription = 'Disk usage more than 80 percent',
+            Dimensions = [
+                {'Name': 'InstanceId', 'Value': agent['instanceId'] },
+                {'Name': 'ImageId', 'Value': agent['imageId']},
+                {'Name': 'InstanceType', 'Value': agent['instanceType']},
+                {'Name': 'device', 'Value': 'nvme0n1p1'},
+                {'Name': 'fstype', 'Value': 'ext4'},
+                {'Name': 'path', 'Value': '/'},
+                
+            ],
+            TreatMissingData = 'missing'
+        )
+
+
+
+
+
+
+
+#"mode=ec2,optionalRestart=yes,optionalConfigurationSource=ssm,action=configure,optionalConfigurationLocation=AmazonLinuxCloudWatchAgentConfig"  --comment "Configure CloudWatch Agent on EC2 Linux machine"
+
+
+#  Dimensions = [
+
+#                 {'Name': 'AutoScalingGroupName', 'Value': 'sg-asg-crmlaravel7-prod' },
+#                 {'Name': 'InstanceId', 'Value': agent['instanceId'] },
+#                 {'Name': 'ImageId', 'Value': agent['imageId']},
+#                 {'Name': 'InstanceType', 'Value': agent['instanceType']},
+#                 {'Name': 'device', 'Value': 'nvme0n1p1'},
+#                 {'Name': 'fstype', 'Value': 'ext4'},
+#                 {'Name': 'path', 'Value': '/'},
+                
+#             ],
+
+# 'arn:aws:sns:ap-southeast-1:738893429783:OpsNotifications',
+# 'arn:aws:sns:ap-southeast-1:738893429783:OpsNotifications-Hipchat'
+
+# 'arn:aws:sns:ap-northeast-2:738893429783:OpsNotifications',
+# 'arn:aws:sns:ap-northeast-2:738893429783:OpsNotifications-Hipchat'
