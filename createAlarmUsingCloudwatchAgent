@@ -107,12 +107,12 @@ for agent in instance_list[1:2]:
     cloudwatch.put_metric_alarm(
             AlarmName = "CRITICAL-" + "(" +agent['instance_name']+ ")-Disk-Utilization" ,
             ComparisonOperator = 'GreaterThanThreshold',
-            EvaluationPeriods = 2,
+            EvaluationPeriods = 2,                    # datapoints
             MetricName = 'disk_used_percent',
             Namespace = 'CWAgent',
-            Period = 300,
+            Period = 300,                        # time period in sec
             Statistic = 'Average',
-            Threshold = 80.0,
+            Threshold = 80.0,                   # threshold in float
             ActionsEnabled=True,
             AlarmActions=[
             'arn:aws:sns:us-east-1:738893429783:OpsNotifications',
@@ -141,3 +141,16 @@ for agent in instance_list[1:2]:
 
 
 #"mode=ec2,optionalRestart=yes,optionalConfigurationSource=ssm,action=configure,optionalConfigurationLocation=AmazonLinuxCloudWatchAgentConfig"  --comment "Configure CloudWatch Agent on EC2 Linux machine"
+
+
+#  Dimensions = [
+
+#                 {'Name': 'AutoScalingGroupName', 'Value': 'sg-asg-crmlaravel7-prod' },
+#                 {'Name': 'InstanceId', 'Value': agent['instanceId'] },
+#                 {'Name': 'ImageId', 'Value': agent['imageId']},
+#                 {'Name': 'InstanceType', 'Value': agent['instanceType']},
+#                 {'Name': 'device', 'Value': 'nvme0n1p1'},
+#                 {'Name': 'fstype', 'Value': 'ext4'},
+#                 {'Name': 'path', 'Value': '/'},
+                
+#             ],
